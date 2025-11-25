@@ -50,7 +50,7 @@ export const getUserRecords = async (req, res) => {
         const records = await Record.find({ userId: req.user._id })
         .sort({ createdAt: -1 });
 
-        return res.json({ recors });
+        return res.json({ records });
     } catch (error) {
         console.error("Get Records Error:", error.message);
         res.status(500).json({ message: "Server error!" });

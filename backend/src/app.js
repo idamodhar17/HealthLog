@@ -6,11 +6,12 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import recordRoutes from "./routes/recordRoutes.js";
 import ocrRoutes from "./routes/ocrRoutes.js";
-import timelineRoutes from "./routes/timelineRoutes.js"
-import qrRoutes from "./routes/qrRoutes.js"
-import doctorRoutes from "./routes/doctorRoutes.js"
-import auditRoutes from "./routes/auditRoutes.js"
-import iceRoutes from "./routes/emergencyRoutes.js"
+import timelineRoutes from "./routes/timelineRoutes.js";
+import qrRoutes from "./routes/qrRoutes.js";
+import doctorRoutes from "./routes/doctorRoutes.js";
+import auditRoutes from "./routes/auditRoutes.js";
+import iceRoutes from "./routes/emergencyRoutes.js";
+import hospitalRoutes from "./routes/hospitalRoutes.js";
 
 dotenv.config();
 
@@ -26,7 +27,8 @@ app.use("/api/ocr", ocrRoutes);
 app.use("/api/timeline", timelineRoutes);
 app.use("/api/qr", qrRoutes);
 app.use("/api/doctor", doctorRoutes);
-app.use("/api/audit/", auditRoutes)
-app.use("api/ice", iceRoutes)
+app.use("/api/audit/", auditRoutes);
+app.use("api/ice", iceRoutes);
+app.use("/api/hospital", hospitalRoutes);
 
 export default app;
