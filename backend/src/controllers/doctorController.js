@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import Record from "../models/Record.js";
 import Timeline from "../models/Timeline.js";
 import Audit from "../models/Audit.js"
+import DoctorNote from "../models/DoctorNote.js";
 
 export const doctorView = async (req, res) => {
   try {
@@ -28,6 +29,9 @@ export const doctorView = async (req, res) => {
     const timeline = await Timeline.find({ userId: patient._id })
     .sort({ date: -1 });
 
+    const doctorNotes = await DoctorNote.find({ patientId: patient._id })
+    .sort({ createdAt: -1 });
+
     await Audit.create({
         userId: patient._id,
         tokenUsed: token,
@@ -39,7 +43,8 @@ export const doctorView = async (req, res) => {
         message: "Doctor view data",
         patient,
         records,
-        timeline
+        timeline,
+        doctorNotes
     })
   } catch (error) {
     console.error("Doctor view error: ", error.message);
