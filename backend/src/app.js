@@ -10,6 +10,7 @@ import timelineRoutes from "./routes/timelineRoutes.js"
 import qrRoutes from "./routes/qrRoutes.js"
 import doctorRoutes from "./routes/doctorRoutes.js"
 import auditRoutes from "./routes/auditRoutes.js"
+import iceRoutes from "./routes/emergencyRoutes.js"
 
 dotenv.config();
 
@@ -26,5 +27,6 @@ app.use("/api/timeline", timelineRoutes);
 app.use("/api/qr", qrRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/audit/", auditRoutes)
+app.use("api/ice", iceRoutes)
 
 export default app;
