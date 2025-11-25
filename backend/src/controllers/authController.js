@@ -28,6 +28,11 @@ export const registerUser = async (req, res) => {
     if (!name || !email || !password)
       return res.status(400).json({ message: "All fields required" });
 
+    // Validate email format
+    if (typeof email !== 'string' || !email.trim()) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
     const emailHash = hashEmail(email);
 
     const existing = await User.findOne({ emailHash });

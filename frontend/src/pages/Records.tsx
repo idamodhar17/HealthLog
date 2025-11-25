@@ -8,43 +8,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import EmptyState from '@/components/shared/EmptyState';
 import { CardSkeleton } from '@/components/shared/LoadingSkeleton';
+import { recordsAPI } from '@/services/api';
+import { toast } from '@/hooks/use-toast';
 
 interface Record {
-  id: string;
-  title: string;
-  type: string;
-  date: string;
-  summary: string;
+  _id: string;
   fileUrl: string;
+  fileType: string;
+  extractedText: string;
+  uploadDate: string;
+  createdAt: string;
 }
-
-// Mock data for demo
-const mockRecords: Record[] = [
-  {
-    id: '1',
-    title: 'Blood Test Report',
-    type: 'Lab Report',
-    date: '2024-01-15',
-    summary: 'Complete blood count, lipid profile, and liver function tests.',
-    fileUrl: '/sample.pdf',
-  },
-  {
-    id: '2',
-    title: 'Chest X-Ray',
-    type: 'Imaging',
-    date: '2024-01-10',
-    summary: 'Routine chest X-ray examination. No abnormalities detected.',
-    fileUrl: '/sample.pdf',
-  },
-  {
-    id: '3',
-    title: 'Prescription - Dr. Smith',
-    type: 'Prescription',
-    date: '2024-01-08',
-    summary: 'Medication for seasonal allergies. 30-day supply.',
-    fileUrl: '/sample.pdf',
-  },
-];
 
 const Records: React.FC = () => {
   const navigate = useNavigate();
@@ -53,32 +27,40 @@ const Records: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    // Simulate API call
     const loadRecords = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setRecords(mockRecords);
-      setIsLoading(false);
+      try {
+        const response = await recordsAPI.getAll();
+        setRecords(response.data.records || []);
+      } catch (error: any) {
+        toast({
+          title: 'Failed to load records',
+          description: error.response?.data?.message || 'Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadRecords();
   }, []);
 
   const filteredRecords = records.filter(
     (record) =>
-      record.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.type.toLowerCase().includes(searchQuery.toLowerCase())
+      record.extractedText?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.fileType?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'Lab Report':
-        return 'bg-primary/10 text-primary';
-      case 'Imaging':
-        return 'bg-secondary/10 text-secondary';
-      case 'Prescription':
-        return 'bg-success/10 text-success';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
+  const getTypeColor = (fileType: string) => {
+    if (fileType?.includes('pdf')) return 'bg-primary/10 text-primary';
+    if (fileType?.includes('image')) return 'bg-secondary/10 text-secondary';
+    return 'bg-muted text-muted-foreground';
+  };
+
+  const getFileTypeLabel = (fileType: string) => {
+    if (fileType?.includes('pdf')) return 'PDF';
+    if (fileType?.includes('jpeg') || fileType?.includes('jpg')) return 'Image';
+    if (fileType?.includes('png')) return 'Image';
+    return 'Document';
   };
 
   return (
@@ -143,20 +125,20 @@ const Records: React.FC = () => {
                     </div>
                     <span
                       className={`text-xs font-medium px-2 py-1 rounded-full ${getTypeColor(
-                        record.type
+                        record.fileType
                       )}`}
                     >
-                      {record.type}
+                      {getFileTypeLabel(record.fileType)}
                     </span>
                   </div>
 
                   <h3 className="font-semibold text-foreground mb-1">
-                    {record.title}
+                    Medical Record
                   </h3>
 
                   <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
                     <Calendar className="h-3 w-3" />
-                    {new Date(record.date).toLocaleDateString('en-US', {
+                    {new Date(record.uploadDate || record.createdAt).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',
@@ -164,16 +146,18 @@ const Records: React.FC = () => {
                   </div>
 
                   <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                    {record.summary}
+                    {record.extractedText || 'No text extracted yet. Use OCR to extract text.'}
                   </p>
 
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => window.open(record.fileUrl, '_blank')}
+                    >
                       <Eye className="h-4 w-4 mr-1" />
                       View
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
                 </CardContent>

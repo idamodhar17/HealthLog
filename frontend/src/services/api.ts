@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -45,7 +45,7 @@ export const authAPI = {
   login: (data: { email: string; password: string }) =>
     api.post('/auth/login', data),
   resendOTP: (email: string) =>
-    api.post('/auth/resend-otp', { email }),
+    api.post('/auth/resend-email-otp', { email }),
 };
 
 // Records APIs
@@ -55,16 +55,12 @@ export const recordsAPI = {
     api.post('/records/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-  getById: (id: string) => api.get(`/records/${id}`),
-  delete: (id: string) => api.delete(`/records/${id}`),
 };
 
 // OCR API
 export const ocrAPI = {
-  extract: (formData: FormData) =>
-    api.post('/ocr/extract', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+  extract: (recordId: string) =>
+    api.post('/ocr/extract', { recordId }),
 };
 
 // Timeline API
@@ -84,9 +80,9 @@ export const doctorAPI = {
   addNote: (token: string, data: {
     doctorName: string;
     diagnosis: string;
-    recommendation: string;
+    recommendations: string;
     followUpDate?: string;
-  }) => api.post(`/notes/add/${token}`, data),
+  }) => api.post(`/doctor/note/add/${token}`, data),
 };
 
 // Hospital APIs
@@ -102,16 +98,14 @@ export const iceAPI = {
   saveProfile: (data: {
     name: string;
     bloodGroup: string;
-    allergies: string[];
-    medicalConditions: string;
-    currentMedications: string;
-    emergencyContacts: Array<{
-      name: string;
-      relation: string;
-      phone: string;
-    }>;
+    allergies?: string;
+    medications?: string;
+    emergencyContacts?: {
+      name?: string;
+      phone?: string;
+      relation?: string;
+    };
   }) => api.post('/ice/save', data),
-  getProfile: () => api.get('/ice/profile'),
   generateQR: () => api.post('/ice/generate'),
   viewPublic: (token: string) => api.get(`/ice/view/${token}`),
 };

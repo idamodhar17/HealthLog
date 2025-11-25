@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import FileUpload from '@/components/shared/FileUpload';
 import { toast } from '@/hooks/use-toast';
+import { recordsAPI } from '@/services/api';
 
 const Upload: React.FC = () => {
   const navigate = useNavigate();
@@ -29,20 +30,32 @@ const Upload: React.FC = () => {
 
     setIsUploading(true);
 
-    // Simulate upload
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Upload first file (backend accepts single file)
+      const formData = new FormData();
+      formData.append('file', files[0]);
 
-    setIsUploading(false);
-    setIsSuccess(true);
+      await recordsAPI.upload(formData);
 
-    toast({
-      title: 'Upload Successful',
-      description: 'Your medical record has been uploaded.',
-    });
+      setIsUploading(false);
+      setIsSuccess(true);
 
-    setTimeout(() => {
-      navigate('/records');
-    }, 1500);
+      toast({
+        title: 'Upload Successful',
+        description: 'Your medical record has been uploaded.',
+      });
+
+      setTimeout(() => {
+        navigate('/records');
+      }, 1500);
+    } catch (error: any) {
+      setIsUploading(false);
+      toast({
+        title: 'Upload Failed',
+        description: error.response?.data?.message || 'Failed to upload file. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (isSuccess) {
@@ -83,7 +96,7 @@ const Upload: React.FC = () => {
             <CardHeader>
               <CardTitle>Upload Medical Document</CardTitle>
               <CardDescription>
-                Supported formats: PDF, JPG, PNG, DOC, DOCX (Max 10MB)
+                Supported formats: PDF, JPG, PNG (Max 10MB)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -99,8 +112,8 @@ const Upload: React.FC = () => {
 
               <FileUpload
                 onFileSelect={setFiles}
-                multiple
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                multiple={false}
+                accept=".pdf,.jpg,.jpeg,.png"
                 maxSize={10}
               />
 

@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/shared/LoadingSkeleton';
+import { iceAPI } from '@/services/api';
 
 interface EmergencyContact {
   id: string;
@@ -42,22 +43,9 @@ const ICEProfile: React.FC = () => {
   const [allergyInput, setAllergyInput] = useState('');
 
   useEffect(() => {
-    const loadProfile = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      // Load mock data
-      setFormData({
-        name: 'John Doe',
-        bloodGroup: 'O+',
-        allergies: ['Penicillin', 'Peanuts'],
-        medicalConditions: 'Type 2 Diabetes, Hypertension',
-        currentMedications: 'Metformin 500mg, Lisinopril 10mg',
-        emergencyContacts: [
-          { id: '1', name: 'Jane Doe', relation: 'Spouse', phone: '+1 555-0123' },
-        ],
-      });
-      setIsLoading(false);
-    };
-    loadProfile();
+    // Note: Backend doesn't have a get profile endpoint
+    // Profile is loaded when generating QR or can be set initially
+    setIsLoading(false);
   }, []);
 
   const handleAddAllergy = () => {
@@ -104,13 +92,43 @@ const ICEProfile: React.FC = () => {
   };
 
   const handleSave = async () => {
+    if (!formData.name || !formData.bloodGroup) {
+      toast({
+        title: 'Validation Error',
+        description: 'Name and Blood Group are required.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    toast({
-      title: 'Profile Saved',
-      description: 'Your emergency profile has been updated.',
-    });
-    setIsSaving(false);
+    try {
+      // Convert frontend format to backend format
+      const backendData = {
+        name: formData.name,
+        bloodGroup: formData.bloodGroup,
+        allergies: formData.allergies.length > 0 ? formData.allergies.join(', ') : undefined,
+        medications: formData.currentMedications || undefined,
+        emergencyContacts: formData.emergencyContacts.length > 0 
+          ? formData.emergencyContacts[0] // Backend expects single contact object
+          : undefined,
+      };
+
+      await iceAPI.saveProfile(backendData);
+      
+      toast({
+        title: 'Profile Saved',
+        description: 'Your emergency profile has been updated.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Save Failed',
+        description: error.response?.data?.message || 'Failed to save profile. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) {

@@ -5,25 +5,38 @@ import Navbar from '@/components/layout/Navbar';
 import QRCodeDisplay from '@/components/shared/QRCodeDisplay';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/shared/LoadingSkeleton';
+import { qrAPI } from '@/services/api';
+import { toast } from '@/hooks/use-toast';
 
 const HospitalQR: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [qrData, setQrData] = useState('');
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
 
   useEffect(() => {
-    const generateQR = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setQrData(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('healthlog-hospital-upload-token-demo')}`);
-      setIsLoading(false);
-    };
     generateQR();
   }, []);
 
-  const handleRefresh = async () => {
+  const generateQR = async () => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setQrData(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('healthlog-hospital-upload-token-' + Date.now())}`);
-    setIsLoading(false);
+    try {
+      const response = await qrAPI.generateHospital();
+      const { qrImage, expiresAt: expiry } = response.data;
+      setQrData(qrImage);
+      setExpiresAt(expiry);
+    } catch (error: any) {
+      toast({
+        title: 'Failed to generate QR',
+        description: error.response?.data?.message || 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    await generateQR();
   };
 
   return (
@@ -47,8 +60,8 @@ const HospitalQR: React.FC = () => {
             <QRCodeDisplay
               qrData={qrData}
               title="Hospital Upload QR"
-              subtitle="Valid for 30 minutes"
-              expiresIn={1800}
+              subtitle="Valid for 1 hour"
+              expiresIn={expiresAt ? Math.floor((expiresAt - Date.now()) / 1000) : 3600}
               onRefresh={handleRefresh}
             />
           )}

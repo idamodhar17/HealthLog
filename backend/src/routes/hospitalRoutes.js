@@ -8,8 +8,8 @@ import {
 
 const router = express.Router();
 
-router.post("generate", authMiddleware, generateHospitalUploadQR);
+router.post("/generate", authMiddleware, generateHospitalUploadQR);
 
-router.post("upload/:token", authMiddleware, hospitalUpload);
+router.post("/upload/:token", authMiddleware, hospitalUpload);
 
 export default router;

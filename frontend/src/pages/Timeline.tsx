@@ -5,52 +5,19 @@ import Navbar from '@/components/layout/Navbar';
 import TimelineItem from '@/components/timeline/TimelineItem';
 import EmptyState from '@/components/shared/EmptyState';
 import { Skeleton } from '@/components/shared/LoadingSkeleton';
+import { timelineAPI } from '@/services/api';
+import { toast } from '@/hooks/use-toast';
 
 interface TimelineEvent {
-  id: string;
+  _id: string;
   date: string;
-  title: string;
-  description: string;
-  type: 'report' | 'note' | 'visit' | 'medication';
+  summary: string;
+  recordId?: {
+    fileUrl?: string;
+    fileType?: string;
+    extractedText?: string;
+  };
 }
-
-const mockTimeline: TimelineEvent[] = [
-  {
-    id: '1',
-    date: '2024-01-15',
-    title: 'Blood Test Results',
-    description: 'Complete blood count and lipid profile results received from PathLab.',
-    type: 'report',
-  },
-  {
-    id: '2',
-    date: '2024-01-10',
-    title: 'Doctor Visit - Dr. Sarah Johnson',
-    description: 'Annual checkup completed. All vitals normal. Recommended vitamin D supplements.',
-    type: 'visit',
-  },
-  {
-    id: '3',
-    date: '2024-01-08',
-    title: 'New Prescription',
-    description: 'Prescribed antihistamine for seasonal allergies. 30-day supply.',
-    type: 'medication',
-  },
-  {
-    id: '4',
-    date: '2024-01-05',
-    title: 'Chest X-Ray',
-    description: 'Routine chest X-ray completed. Results: No abnormalities detected.',
-    type: 'report',
-  },
-  {
-    id: '5',
-    date: '2023-12-20',
-    title: 'Doctor Note - Dr. Michael Chen',
-    description: 'Follow-up appointment. Recovery progressing well. Continue current medication.',
-    type: 'note',
-  },
-];
 
 const Timeline: React.FC = () => {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
@@ -58,9 +25,18 @@ const Timeline: React.FC = () => {
 
   useEffect(() => {
     const loadTimeline = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setEvents(mockTimeline);
-      setIsLoading(false);
+      try {
+        const response = await timelineAPI.get();
+        setEvents(response.data.timeline || []);
+      } catch (error: any) {
+        toast({
+          title: 'Failed to load timeline',
+          description: error.response?.data?.message || 'Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
     };
     loadTimeline();
   }, []);
@@ -97,17 +73,17 @@ const Timeline: React.FC = () => {
             <div className="animate-fade-in">
               {events.map((event, index) => (
                 <TimelineItem
-                  key={event.id}
+                  key={event._id}
                   date={new Date(event.date).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',
                   })}
-                  title={event.title}
-                  description={event.description}
-                  type={event.type}
+                  title="Timeline Entry"
+                  description={event.summary}
+                  type="report"
                   isLast={index === events.length - 1}
-                  onClick={() => {}}
+                  onClick={() => event.recordId?.fileUrl && window.open(event.recordId.fileUrl, '_blank')}
                 />
               ))}
             </div>

@@ -2,7 +2,7 @@ import Timeline from "../models/Timeline.js";
 
 export const getTimeline = async (req, res) => {
     try {
-        const timeline = await Timeline.find({ userId: req_user._id })
+        const timeline = await Timeline.find({ userId: req.user._id })
         .populate("recordId", "fileUrl fileType extractedText")
         .sort({ date: -1 });
 

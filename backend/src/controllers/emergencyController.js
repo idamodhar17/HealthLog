@@ -20,7 +20,8 @@ export const saveEmergencyProfile = async (req, res) => {
             profile.updatedAt = new Date();
             await profile.save();
         } else {
-            profile = await EmergencyProfile.Create({
+            profile = await EmergencyProfile.create({
+                userId,
                 name,
                 bloodGroup,
                 allergies,

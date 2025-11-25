@@ -8,24 +8,24 @@ export const extractText = async (req, res) => {
 
         const record = await Record.findById(recordId);
         if(!record) {
-            return res.statues(404).json({ message: "Record not found." });
+            return res.status(404).json({ message: "Record not found." });
         }
 
         //OCR Extraction
-        const result = await Tesseract.recognize(RTCEncodedAudioFrame.fileUrl, 'eng');
+        const result = await Tesseract.recognize(record.fileUrl, 'eng');
 
-        const extracted = result.data.text;
+        const extracted = result.data.text.trim();
 
         // Save Extracted Text
         record.extractedText = extracted;
         await record.save();
 
         // Create timeline entry
-        await Timeline.create ({
-            userId: req.user.id,
+        await Timeline.create({
+            userId: req.user._id,
             recordId: record._id,
             date: new Date(),
-            summary: extractedText.subString(0, 100) + "...", // First 100 chars
+            summary: extracted.substring(0, 100) + "...", // First 100 chars
         });
 
         res.json({

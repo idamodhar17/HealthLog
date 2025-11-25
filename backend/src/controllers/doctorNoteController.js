@@ -15,9 +15,10 @@ export const addNoteViaQR = async (req, res) => {
             return res.status(400).json({ message: "Token Expired" });
 
         const note = await DoctorNote.create({
+            patientId: tokenData.userId,
             doctorName,
             diagnosis,
-            reccomendations,
+            recommendations,
             followUpDate,
             tokenUsed: token,
         });

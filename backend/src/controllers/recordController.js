@@ -18,7 +18,7 @@ export const uploadRecord = async (req, res) => {
 
         // Save Cloudinary URL in DB
         const record = await new Record({
-            userId: req.user.id,
+            userId: req.user._id,
             fileUrl: result.secure_url,
             fileId: result.public_id,
             fileType: req.file.mimetype,
@@ -28,7 +28,7 @@ export const uploadRecord = async (req, res) => {
 
         // Add timeline entry
         await new Timeline({
-            userId: req.user.id,
+            userId: req.user._id,
             recordId: record._id,
             date: new Date(),
             summary: "Medical report uploaded. OCR Processing pending.",

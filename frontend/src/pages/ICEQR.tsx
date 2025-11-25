@@ -5,25 +5,36 @@ import Navbar from '@/components/layout/Navbar';
 import QRCodeDisplay from '@/components/shared/QRCodeDisplay';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/shared/LoadingSkeleton';
+import { iceAPI } from '@/services/api';
+import { toast } from '@/hooks/use-toast';
 
 const ICEQR: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [qrData, setQrData] = useState('');
 
   useEffect(() => {
-    const generateQR = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setQrData(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('healthlog-ice-token-demo')}`);
-      setIsLoading(false);
-    };
     generateQR();
   }, []);
 
-  const handleRefresh = async () => {
+  const generateQR = async () => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setQrData(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('healthlog-ice-token-' + Date.now())}`);
-    setIsLoading(false);
+    try {
+      const response = await iceAPI.generateQR();
+      const { qrImage } = response.data;
+      setQrData(qrImage);
+    } catch (error: any) {
+      toast({
+        title: 'Failed to generate QR',
+        description: error.response?.data?.message || 'Please create an emergency profile first.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    await generateQR();
   };
 
   return (
