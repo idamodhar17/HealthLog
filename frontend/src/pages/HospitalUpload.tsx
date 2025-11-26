@@ -1,11 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Activity, Upload as UploadIcon, CheckCircle, Loader2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import FileUpload from '@/components/shared/FileUpload';
-import { toast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/shared/LoadingSkeleton';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import {
+  Activity,
+  Upload as UploadIcon,
+  CheckCircle,
+  Loader2,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import FileUpload from "@/components/shared/FileUpload";
+import { toast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/shared/LoadingSkeleton";
+import { hospitalAPI } from "@/services/api";
 
 const HospitalUpload: React.FC = () => {
   const { token } = useParams<{ token: string }>();
@@ -14,37 +26,64 @@ const HospitalUpload: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [patientName, setPatientName] = useState('');
+  const [patientName, setPatientName] = useState("");
 
   useEffect(() => {
-    const validateToken = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setIsValid(true);
-      setPatientName('John Doe');
+    const query = new URLSearchParams(window.location.search);
+    const encodedName = query.get("p");
+
+    if (!encodedName) {
+      setIsValid(false);
       setIsLoading(false);
-    };
-    validateToken();
+      return;
+    }
+
+    try {
+      const decodedName = atob(encodedName);
+      setPatientName(decodedName);
+      setIsValid(true);
+    } catch (error) {
+      setIsValid(false);
+    }
+
+    setIsLoading(false);
   }, [token]);
 
   const handleUpload = async () => {
     if (files.length === 0) {
       toast({
-        title: 'No files selected',
-        description: 'Please select at least one file to upload.',
-        variant: 'destructive',
+        title: "No files selected",
+        description: "Please select at least one file to upload.",
+        variant: "destructive",
       });
       return;
     }
 
-    setIsUploading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsUploading(false);
-    setIsSuccess(true);
+    try {
+      setIsUploading(true);
 
-    toast({
-      title: 'Upload Successful',
-      description: 'Medical reports have been uploaded to patient records.',
-    });
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append("file", file);
+      });
+
+      const response = await hospitalAPI.upload(token!, formData);
+
+      setIsSuccess(true);
+
+      toast({
+        title: "Upload Successful",
+        description: "Medical reports have been uploaded to patient records.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upload Failed",
+        description: error.response?.data?.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   if (isLoading) {
@@ -71,7 +110,8 @@ const HospitalUpload: React.FC = () => {
               Invalid or Expired Link
             </h2>
             <p className="text-muted-foreground">
-              This upload link is no longer valid. Please request a new QR code from the patient.
+              This upload link is no longer valid. Please request a new QR code
+              from the patient.
             </p>
           </CardContent>
         </Card>
@@ -89,8 +129,12 @@ const HospitalUpload: React.FC = () => {
                 <Activity className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-primary-foreground">HealthLog</h1>
-                <p className="text-sm text-primary-foreground/80">Hospital Upload Portal</p>
+                <h1 className="text-xl font-bold text-primary-foreground">
+                  HealthLog
+                </h1>
+                <p className="text-sm text-primary-foreground/80">
+                  Hospital Upload Portal
+                </p>
               </div>
             </div>
           </div>
@@ -104,12 +148,16 @@ const HospitalUpload: React.FC = () => {
               Upload Complete!
             </h2>
             <p className="text-muted-foreground mb-6">
-              {files.length} file(s) uploaded to {patientName}'s medical records.
+              {files.length} file(s) uploaded to {patientName}'s medical
+              records.
             </p>
-            <Button variant="outline" onClick={() => {
-              setIsSuccess(false);
-              setFiles([]);
-            }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsSuccess(false);
+                setFiles([]);
+              }}
+            >
               Upload More Files
             </Button>
           </div>
@@ -128,8 +176,12 @@ const HospitalUpload: React.FC = () => {
               <Activity className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-primary-foreground">HealthLog</h1>
-              <p className="text-sm text-primary-foreground/80">Hospital Upload Portal</p>
+              <h1 className="text-xl font-bold text-primary-foreground">
+                HealthLog
+              </h1>
+              <p className="text-sm text-primary-foreground/80">
+                Hospital Upload Portal
+              </p>
             </div>
           </div>
         </div>
@@ -140,7 +192,8 @@ const HospitalUpload: React.FC = () => {
           <CardHeader>
             <CardTitle>Upload Medical Reports</CardTitle>
             <CardDescription>
-              Upload reports for patient: <span className="font-medium text-foreground">{patientName}</span>
+              Upload reports for patient:{" "}
+              <span className="font-medium text-foreground">{patientName}</span>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

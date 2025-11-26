@@ -79,7 +79,7 @@ const Timeline: React.FC = () => {
                     month: 'short',
                     day: 'numeric',
                   })}
-                  title="Timeline Entry"
+                  title=""
                   description={event.summary}
                   type="report"
                   isLast={index === events.length - 1}

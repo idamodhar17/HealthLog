@@ -1,8 +1,10 @@
 import crypto from "crypto";
 import HospitalUploadToken from "../models/HospitalUploadToken.js";
+import User from "../models/User.js";
 import Record from "../models/Record.js";
 import Timeline from "../models/Timeline.js";
 import cloudinary from "../config/cloudinary.js";
+import { decrypt } from "../utils/crypto.js";
 import qrcode from "qrcode";
 import Tesseract from "tesseract.js";
 import fs from "fs";
@@ -16,13 +18,24 @@ export const generateHospitalUploadQR = async (req, res) => {
 
         await HospitalUploadToken.create({ userId, token, expiresAt });
 
-        const uploadUrl = `${process.env.CLIENT_URL}/hospital-upload/${token}`;
+        const patient = await User.findById(userId).select("name");
+
+        const decryptedPatient = {
+              ...patient._doc,
+              name: patient.name ? decrypt(patient.name) : null,
+        }
+
+        const encodedName = Buffer.from(decryptedPatient.name).toString("base64");
+
+        const uploadUrl = `${process.env.CLIENT_URL}/hospital-upload/${token}?p=${encodedName}`;
+
         const qrImage = await qrcode.toDataURL(uploadUrl);
 
         res.json({
             message: "Hospital Upload QR Generated",
             token,
             qrImage,
+            patientName: decryptedPatient,
             expiresAt,
         });
 

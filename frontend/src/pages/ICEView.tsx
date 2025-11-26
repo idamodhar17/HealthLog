@@ -1,8 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Activity, Heart, Droplet, AlertTriangle, Pill, Phone, Clock } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/shared/LoadingSkeleton';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import {
+  Activity,
+  Heart,
+  Droplet,
+  AlertTriangle,
+  Pill,
+  Phone,
+  Clock,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/shared/LoadingSkeleton";
+import { iceAPI } from "@/services/api";
+import { toast } from "@/components/ui/use-toast";
 
 interface ICEData {
   name: string;
@@ -18,18 +28,19 @@ interface ICEData {
   lastUpdated: string;
 }
 
-const mockICEData: ICEData = {
-  name: 'John Doe',
-  bloodGroup: 'O+',
-  allergies: ['Penicillin', 'Peanuts', 'Shellfish'],
-  medicalConditions: 'Type 2 Diabetes, Hypertension, Asthma',
-  currentMedications: 'Metformin 500mg (twice daily), Lisinopril 10mg (daily), Albuterol inhaler (as needed)',
-  emergencyContacts: [
-    { name: 'Jane Doe', relation: 'Spouse', phone: '+1 555-0123' },
-    { name: 'Robert Doe', relation: 'Brother', phone: '+1 555-0456' },
-  ],
-  lastUpdated: '2024-01-15',
-};
+// const mockICEData: ICEData = {
+//   name: "John Doe",
+//   bloodGroup: "O+",
+//   allergies: ["Penicillin", "Peanuts", "Shellfish"],
+//   medicalConditions: "Type 2 Diabetes, Hypertension, Asthma",
+//   currentMedications:
+//     "Metformin 500mg (twice daily), Lisinopril 10mg (daily), Albuterol inhaler (as needed)",
+//   emergencyContacts: [
+//     { name: "Jane Doe", relation: "Spouse", phone: "+1 555-0123" },
+//     { name: "Robert Doe", relation: "Brother", phone: "+1 555-0456" },
+//   ],
+//   lastUpdated: "2024-01-15",
+// };
 
 const ICEView: React.FC = () => {
   const { token } = useParams<{ token: string }>();
@@ -37,13 +48,46 @@ const ICEView: React.FC = () => {
   const [data, setData] = useState<ICEData | null>(null);
 
   useEffect(() => {
-    const loadData = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setData(mockICEData);
+  const loadICE = async () => {
+    try {
+      const response = await iceAPI.viewPublic(token!);
+
+      const p = response.data.profile;
+
+      if (!p) {
+        setData(null);
+        return;
+      }
+
+      const formatted: ICEData = {
+        name: p.name,
+        bloodGroup: p.bloodGroup,
+        allergies: typeof p.allergies === "string"
+          ? p.allergies.split(",").map(a => a.trim())
+          : [],
+        medicalConditions: p.medicalConditions || "Not specified",
+        currentMedications: p.medications || "Not specified",
+
+        emergencyContacts: Array.isArray(p.emergencyContacts)
+          ? p.emergencyContacts
+          : p.emergencyContacts
+            ? [p.emergencyContacts]
+            : [],
+
+        lastUpdated: p.updatedAt,
+      };
+
+      setData(formatted);
+    } catch (err: any) {
+      console.error("ICE API ERROR:", err);
+      setData(null);
+    } finally {
       setIsLoading(false);
-    };
-    loadData();
-  }, [token]);
+    }
+  };
+
+  loadICE();
+}, [token]);
 
   if (isLoading) {
     return (
@@ -89,8 +133,12 @@ const ICEView: React.FC = () => {
               <Heart className="h-5 w-5 text-destructive-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-destructive-foreground">Emergency Profile</h1>
-              <p className="text-sm text-destructive-foreground/80">Critical Medical Information</p>
+              <h1 className="text-xl font-bold text-destructive-foreground">
+                Emergency Profile
+              </h1>
+              <p className="text-sm text-destructive-foreground/80">
+                Critical Medical Information
+              </p>
             </div>
           </div>
         </div>
@@ -102,14 +150,22 @@ const ICEView: React.FC = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Patient Name</p>
-                <p className="text-2xl font-bold text-foreground">{data.name}</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Patient Name
+                </p>
+                <p className="text-2xl font-bold text-foreground">
+                  {data.name}
+                </p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-muted-foreground mb-1">Blood Group</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Blood Group
+                </p>
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive/10">
                   <Droplet className="h-5 w-5 text-destructive" />
-                  <span className="text-2xl font-bold text-destructive">{data.bloodGroup}</span>
+                  <span className="text-2xl font-bold text-destructive">
+                    {data.bloodGroup}
+                  </span>
                 </div>
               </div>
             </div>
@@ -117,7 +173,10 @@ const ICEView: React.FC = () => {
         </Card>
 
         {/* Allergies - Critical */}
-        <Card className="mb-4 border-2 border-warning/20 bg-warning/5 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        <Card
+          className="mb-4 border-2 border-warning/20 bg-warning/5 animate-fade-in"
+          style={{ animationDelay: "0.1s" }}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-warning">
               <AlertTriangle className="h-5 w-5" />
@@ -139,7 +198,10 @@ const ICEView: React.FC = () => {
         </Card>
 
         {/* Medical Conditions */}
-        <Card className="mb-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+        <Card
+          className="mb-4 animate-fade-in"
+          style={{ animationDelay: "0.2s" }}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <Heart className="h-5 w-5 text-primary" />
@@ -152,7 +214,10 @@ const ICEView: React.FC = () => {
         </Card>
 
         {/* Current Medications */}
-        <Card className="mb-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+        <Card
+          className="mb-4 animate-fade-in"
+          style={{ animationDelay: "0.3s" }}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <Pill className="h-5 w-5 text-success" />
@@ -160,12 +225,17 @@ const ICEView: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-foreground whitespace-pre-line">{data.currentMedications}</p>
+            <p className="text-foreground whitespace-pre-line">
+              {data.currentMedications}
+            </p>
           </CardContent>
         </Card>
 
         {/* Emergency Contacts */}
-        <Card className="mb-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+        <Card
+          className="mb-4 animate-fade-in"
+          style={{ animationDelay: "0.4s" }}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <Phone className="h-5 w-5 text-secondary" />
@@ -177,12 +247,16 @@ const ICEView: React.FC = () => {
               {data.emergencyContacts.map((contact, index) => (
                 <a
                   key={index}
-                  href={`tel:${contact.phone.replace(/\s/g, '')}`}
+                  href={`tel:${contact.phone.replace(/\s/g, "")}`}
                   className="flex items-center justify-between p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
                 >
                   <div>
-                    <p className="font-medium text-foreground">{contact.name}</p>
-                    <p className="text-sm text-muted-foreground">{contact.relation}</p>
+                    <p className="font-medium text-foreground">
+                      {contact.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {contact.relation}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="font-medium text-primary">{contact.phone}</p>
@@ -195,9 +269,14 @@ const ICEView: React.FC = () => {
         </Card>
 
         {/* Last Updated */}
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '0.5s' }}>
+        <div
+          className="flex items-center justify-center gap-2 text-sm text-muted-foreground animate-fade-in"
+          style={{ animationDelay: "0.5s" }}
+        >
           <Clock className="h-4 w-4" />
-          <span>Last updated: {new Date(data.lastUpdated).toLocaleDateString()}</span>
+          <span>
+            Last updated: {new Date(data.lastUpdated).toLocaleDateString()}
+          </span>
         </div>
 
         {/* HealthLog Branding */}

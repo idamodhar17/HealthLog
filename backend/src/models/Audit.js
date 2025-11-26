@@ -12,6 +12,11 @@ const auditSchema = new mongoose.Schema(
     accessedAt: { type: Date, default: Date.now },
 
     detailsViewed: { type: String },
+
+    tokenUsed: { 
+      type: String,
+      default: "N/A" 
+    },
   },
   { timestamps: true }
 );

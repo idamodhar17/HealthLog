@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FileText, Calendar, Eye, Trash2, Search, Filter } from 'lucide-react';
-import PageContainer from '@/components/layout/PageContainer';
-import Navbar from '@/components/layout/Navbar';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import EmptyState from '@/components/shared/EmptyState';
-import { CardSkeleton } from '@/components/shared/LoadingSkeleton';
-import { recordsAPI } from '@/services/api';
-import { toast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FileText, Calendar, Eye, Trash2, Search, Filter } from "lucide-react";
+import PageContainer from "@/components/layout/PageContainer";
+import Navbar from "@/components/layout/Navbar";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import EmptyState from "@/components/shared/EmptyState";
+import { CardSkeleton } from "@/components/shared/LoadingSkeleton";
+import { recordsAPI, ocrAPI } from "@/services/api";
+import { toast } from "@/hooks/use-toast";
 
 interface Record {
   _id: string;
@@ -24,7 +24,8 @@ const Records: React.FC = () => {
   const navigate = useNavigate();
   const [records, setRecords] = useState<Record[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [ocrLoading, setOcrLoading] = useState<string | null>(null);
 
   useEffect(() => {
     const loadRecords = async () => {
@@ -33,9 +34,9 @@ const Records: React.FC = () => {
         setRecords(response.data.records || []);
       } catch (error: any) {
         toast({
-          title: 'Failed to load records',
-          description: error.response?.data?.message || 'Please try again.',
-          variant: 'destructive',
+          title: "Failed to load records",
+          description: error.response?.data?.message || "Please try again.",
+          variant: "destructive",
         });
       } finally {
         setIsLoading(false);
@@ -50,17 +51,46 @@ const Records: React.FC = () => {
       record.fileType?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleOCR = async (recordId: string) => {
+    try {
+      setOcrLoading(recordId);
+
+      const response = await ocrAPI.extract(recordId);
+
+      toast({
+        title: "OCR Successful",
+        description: "Extracted text updated.",
+      });
+
+      setRecords((prev) =>
+        prev.map((r) =>
+          r._id === recordId
+            ? { ...r, extractedText: response.data.extractedText }
+            : r
+        )
+      );
+    } catch (error: any) {
+      toast({
+        title: "OCR Failed",
+        description: error.response?.data?.message || "Try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setOcrLoading(null);
+    }
+  };
+
   const getTypeColor = (fileType: string) => {
-    if (fileType?.includes('pdf')) return 'bg-primary/10 text-primary';
-    if (fileType?.includes('image')) return 'bg-secondary/10 text-secondary';
-    return 'bg-muted text-muted-foreground';
+    if (fileType?.includes("pdf")) return "bg-primary/10 text-primary";
+    if (fileType?.includes("image")) return "bg-secondary/10 text-secondary";
+    return "bg-muted text-muted-foreground";
   };
 
   const getFileTypeLabel = (fileType: string) => {
-    if (fileType?.includes('pdf')) return 'PDF';
-    if (fileType?.includes('jpeg') || fileType?.includes('jpg')) return 'Image';
-    if (fileType?.includes('png')) return 'Image';
-    return 'Document';
+    if (fileType?.includes("pdf")) return "PDF";
+    if (fileType?.includes("jpeg") || fileType?.includes("jpg")) return "Image";
+    if (fileType?.includes("png")) return "Image";
+    return "Document";
   };
 
   return (
@@ -72,7 +102,7 @@ const Records: React.FC = () => {
         showBack
         backTo="/dashboard"
         headerAction={
-          <Button variant="medical" onClick={() => navigate('/upload')}>
+          <Button variant="medical" onClick={() => navigate("/upload")}>
             Upload New
           </Button>
         }
@@ -103,17 +133,17 @@ const Records: React.FC = () => {
             title="No records found"
             description={
               searchQuery
-                ? 'Try adjusting your search query'
-                : 'Upload your first medical record to get started'
+                ? "Try adjusting your search query"
+                : "Upload your first medical record to get started"
             }
-            actionLabel={searchQuery ? undefined : 'Upload Record'}
-            onAction={searchQuery ? undefined : () => navigate('/upload')}
+            actionLabel={searchQuery ? undefined : "Upload Record"}
+            onAction={searchQuery ? undefined : () => navigate("/upload")}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRecords.map((record, index) => (
               <Card
-                key={record.id}
+                key={record._id}
                 hover
                 className="animate-fade-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
@@ -138,26 +168,46 @@ const Records: React.FC = () => {
 
                   <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
                     <Calendar className="h-3 w-3" />
-                    {new Date(record.uploadDate || record.createdAt).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
+                    {new Date(
+                      record.uploadDate || record.createdAt
+                    ).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
                     })}
                   </div>
 
                   <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                    {record.extractedText || 'No text extracted yet. Use OCR to extract text.'}
+                    {record.extractedText ||
+                      "No text extracted yet. Use OCR to extract text."}
                   </p>
 
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="flex-1"
-                      onClick={() => window.open(record.fileUrl, '_blank')}
+                      onClick={() => window.open(record.fileUrl, "_blank")}
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       View
+                    </Button>
+
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={ocrLoading === record._id}
+                      onClick={() => handleOCR(record._id)}
+                      className="flex-1"
+                    >
+                      {ocrLoading === record._id ? (
+                        "Extracting..."
+                      ) : (
+                        <>
+                          <FileText className="h-4 w-4 mr-1" />
+                          OCR Extract
+                        </>
+                      )}
                     </Button>
                   </div>
                 </CardContent>

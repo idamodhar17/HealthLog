@@ -24,6 +24,7 @@ import ICEProfile from "./pages/ICEProfile";
 import ICEQR from "./pages/ICEQR";
 import ICEView from "./pages/ICEView";
 import Audit from "./pages/Audit";
+import AISummary from "./pages/AISummary";
 
 const queryClient = new QueryClient();
 
@@ -40,10 +41,13 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
-            
+
             {/* Public Access Routes (no auth required) */}
             <Route path="/doctor/:token" element={<DoctorView />} />
-            <Route path="/hospital-upload/:token" element={<HospitalUpload />} />
+            <Route
+              path="/hospital-upload/:token"
+              element={<HospitalUpload />}
+            />
             <Route path="/ice/:token" element={<ICEView />} />
 
             {/* Protected Routes */}
@@ -116,6 +120,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Audit />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ai/summary"
+              element={
+                <ProtectedRoute>
+                  <AISummary />
                 </ProtectedRoute>
               }
             />

@@ -21,7 +21,7 @@ const HospitalQR: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await qrAPI.generateHospital();
-      const { qrImage, expiresAt: expiry } = response.data;
+      const { qrImage, expiresAt: expiry, patientName } = response.data;
       setQrData(qrImage);
       setExpiresAt(expiry);
     } catch (error: any) {

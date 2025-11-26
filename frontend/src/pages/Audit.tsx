@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import EmptyState from '@/components/shared/EmptyState';
 import { TableSkeleton } from '@/components/shared/LoadingSkeleton';
+import { auditAPI } from '@/services/api';
 
 interface AuditLog {
   id: string;
@@ -16,48 +17,48 @@ interface AuditLog {
   details: string;
 }
 
-const mockLogs: AuditLog[] = [
-  {
-    id: '1',
-    timestamp: '2024-01-15T14:30:00',
-    ipAddress: '192.168.1.100',
-    accessType: 'doctor',
-    tokenUsed: 'doc_abc123',
-    details: 'Dr. Sarah Johnson viewed medical records',
-  },
-  {
-    id: '2',
-    timestamp: '2024-01-15T10:15:00',
-    ipAddress: '10.0.0.50',
-    accessType: 'hospital',
-    tokenUsed: 'hosp_xyz789',
-    details: 'City Hospital uploaded 2 lab reports',
-  },
-  {
-    id: '3',
-    timestamp: '2024-01-14T18:45:00',
-    ipAddress: '203.0.113.25',
-    accessType: 'self',
-    tokenUsed: 'N/A',
-    details: 'Self access - Viewed timeline',
-  },
-  {
-    id: '4',
-    timestamp: '2024-01-14T09:00:00',
-    ipAddress: '198.51.100.10',
-    accessType: 'emergency',
-    tokenUsed: 'ice_def456',
-    details: 'Emergency responder accessed ICE profile',
-  },
-  {
-    id: '5',
-    timestamp: '2024-01-13T16:20:00',
-    ipAddress: '192.168.1.100',
-    accessType: 'doctor',
-    tokenUsed: 'doc_ghi321',
-    details: 'Dr. Michael Chen added clinical note',
-  },
-];
+// const mockLogs: AuditLog[] = [
+//   {
+//     id: '1',
+//     timestamp: '2024-01-15T14:30:00',
+//     ipAddress: '192.168.1.100',
+//     accessType: 'doctor',
+//     tokenUsed: 'doc_abc123',
+//     details: 'Dr. Sarah Johnson viewed medical records',
+//   },
+//   {
+//     id: '2',
+//     timestamp: '2024-01-15T10:15:00',
+//     ipAddress: '10.0.0.50',
+//     accessType: 'hospital',
+//     tokenUsed: 'hosp_xyz789',
+//     details: 'City Hospital uploaded 2 lab reports',
+//   },
+//   {
+//     id: '3',
+//     timestamp: '2024-01-14T18:45:00',
+//     ipAddress: '203.0.113.25',
+//     accessType: 'self',
+//     tokenUsed: 'N/A',
+//     details: 'Self access - Viewed timeline',
+//   },
+//   {
+//     id: '4',
+//     timestamp: '2024-01-14T09:00:00',
+//     ipAddress: '198.51.100.10',
+//     accessType: 'emergency',
+//     tokenUsed: 'ice_def456',
+//     details: 'Emergency responder accessed ICE profile',
+//   },
+//   {
+//     id: '5',
+//     timestamp: '2024-01-13T16:20:00',
+//     ipAddress: '192.168.1.100',
+//     accessType: 'doctor',
+//     tokenUsed: 'doc_ghi321',
+//     details: 'Dr. Michael Chen added clinical note',
+//   },
+// ];
 
 const Audit: React.FC = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -65,13 +66,33 @@ const Audit: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const loadLogs = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setLogs(mockLogs);
+  const loadLogs = async () => {
+    try {
+      setIsLoading(true);
+
+      const response = await auditAPI.getLogs();
+
+      const formatted = response.data.logs.map((log: any) => ({
+        id: log._id,
+        timestamp: log.accessedAt,
+        ipAddress: log.ip,
+        accessType: log.accessType || "doctor",
+        tokenUsed: log.tokenUsed || "N/A",
+        details: log.detailsViewed || "Accessed records",
+      }));
+
+      setLogs(formatted);
+
+    } catch (error: any) {
+      console.error("Audit Logs Error:", error);
+    } finally {
       setIsLoading(false);
-    };
-    loadLogs();
-  }, []);
+    }
+  };
+
+  loadLogs();
+}, []);
+
 
   const filteredLogs = logs.filter(
     (log) =>

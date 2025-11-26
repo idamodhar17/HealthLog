@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.post("/generate", authMiddleware, generateHospitalUploadQR);
 
-router.post("/upload/:token", authMiddleware, hospitalUpload);
+router.post("/upload/:token", upload.single("file"), hospitalUpload);
 
 export default router;

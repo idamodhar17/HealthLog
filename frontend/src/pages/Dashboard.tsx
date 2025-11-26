@@ -35,7 +35,7 @@ const dashboardItems = [
     description: 'View your complete health journey chronologically.',
     icon: Clock,
     to: '/timeline',
-    gradient: false,
+    gradient: true,
   },
   {
     title: 'Doctor QR Code',
@@ -70,8 +70,15 @@ const dashboardItems = [
     description: 'Track who accessed your medical records and when.',
     icon: Shield,
     to: '/audit',
-    gradient: false,
+    gradient: true,
   },
+  {
+  title: 'AI Health Summary',
+  description: 'Generate an AI-powered summary of your medical reports.',
+  icon: FileText,
+  to: '/ai/summary',
+  gradient: false,
+},
 ];
 
 const Dashboard: React.FC = () => {
@@ -95,10 +102,10 @@ const Dashboard: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex items-center gap-4 text-primary-foreground/70">
-                  <div className="text-right">
+                  {/* <div className="text-right">
                     <p className="text-sm">Your Health Score</p>
                     <p className="text-3xl font-bold text-primary-foreground">95%</p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </CardContent>
