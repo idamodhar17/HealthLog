@@ -1,236 +1,75 @@
 # HealthLog
 
-HealthLog – AI-Powered Digital Health Locker
-
-HealthLog is a secure, interoperable digital health locker that enables patients to store, manage, and share their medical records. It provides a seamless QR-based workflow for doctors and hospitals, integrates OCR to extract text from medical documents, and uses an AI microservice to generate structured health summaries.
-
-HealthLog follows modern healthcare interoperability concepts, remaining simple and deployment-ready.
-
-Table of Contents
-
-Overview
-
-Key Features
-
-System Architecture
-
-Tech Stack
-
-API Overview
-
-Installation and Setup
-
-Project Structure
-
-Security Considerations
-
-Future Enhancements
-
-License
-
-1. Overview
-
-Healthcare files are scattered across labs, hospitals, and devices. Patients often struggle to maintain their medical history and share it efficiently with doctors. HealthLog solves this by offering:
-
-A unified, secure digital health locker
-
-QR-based access for hospitals and doctors
-
-OCR extraction from medical files
-
-AI-generated medical summaries
-
-Emergency ICE (In Case of Emergency) profile with QR
-
-Audit logs for transparency
-
-The system ensures that patients remain in full control of their data.
-
-2. Key Features
-
-2.1 Patient Features
-
-Register, verify email via OTP, and log in securely
-
-Upload medical reports (PDF, images)
-
-View and manage medical records
-
-View auto-generated medical timeline
-
-Generate Doctor Access QR (temporary read-only access)
-
-Generate Hospital Upload QR (temporary upload access)
-
-Create an Emergency ICE Profile
-
-Access AI-generated health summary
-
-View audit logs
-
-2.2 Doctor Features
-
-Scan patient QR
-
-Access patient records without login (QR-secured)
-
-View timeline, summaries, extracted text
-
-Add doctor notes securely
-
-2.3 Hospital Features
-
-Scan special QR to upload reports for a patient
-
-Upload files directly without login
-
-Files automatically stored under patient records
-
-2.4 AI Microservice
-
-A dedicated FastAPI service
-
-Converts OCR text into a structured JSON health summary
-
-Powered by OpenAI GPT models
-
-Diagnoses extraction, medication breakdown, lab overview, follow-up, and warnings
-
-2.5 OCR and Timeline
-
-Tesseract.js OCR
-
-Extracts text from uploaded files
-
-Auto-generates timeline entries
-
-2.6 Emergency Profile
-
-Stores blood group, allergies, medical history, emergency contacts
-
-Public QR for paramedics
-
-No login required
-
-3. System Architecture
-
-QR Token System:
-
-Doctor Access Token
-
-Hospital Upload Token
-
-ICE Token
-
-All tokens are time-bound and secure
-
-4. Tech Stack
-Frontend
-
-React (Vite)
-
-TailwindCSS
-
-Axios
-
-Context API
-
-React Router
-
-Lucide Icons
-
-Backend (Node.js)
-
-Express.js
-
-MongoDB + Mongoose
-
-JWT Authentication
-
-Multer + Cloudinary
-
-Tesseract.js OCR
-
-QR Code Generation
-
-Crypto-secured tokens
-
-AI Microservice
-
-FastAPI
-
-OpenAI API
-
-Uvicorn
-
-Pydantic
-
-5. API Overview
-Authentication
-
-POST /auth/register
-
-POST /auth/verify-email-otp
-
-POST /auth/login
-
-Records
-
-POST /records/upload
-
-GET /records/all
-
-POST /ocr/extract
-
-GET /ocr/all
-
-Timeline
-
-GET /timeline
-
-Doctor QR
-
-POST /qr/generate
-
-GET /doctor/view/:token
-
-POST /doctor/note/add/:token
-
-Hospital Upload
-
-POST /hospital/generate
-
-POST /hospital/upload/:token
-
-Emergency (ICE)
-
-POST /ice/save
-
-POST /ice/generate
-
-GET /ice/view/:token
-
-AI Summary
-
-GET /ai/summary (Node backend → FastAPI microservice)
-
-Audit Logs
-
-GET /audit
-
-6. Installation and Setup
-Clone Repository
+HealthLog is a secure, interoperable digital health locker designed to help patients store, manage, and share their medical records. It includes OCR-based text extraction, AI-generated medical summaries, and QR-based workflows for doctors and hospitals. Patients maintain full control over their data, with all accesses secured through time-bound tokens.
+
+## Features
+
+- **Digital Health Locker**: Upload, store, and manage medical files such as PDFs and images.
+- **OCR Extraction**: Extracts text content from uploaded reports using Tesseract.js.
+- **AI Health Summary**: A dedicated FastAPI microservice uses GPT models to generate structured medical summaries.
+- **QR-Based Access System**:
+  - Temporary Doctor Access QR for read-only viewing.
+  - Temporary Hospital Upload QR for adding new reports.
+  - Public Emergency (ICE) QR for critical medical information.
+- **Medical Timeline**: Automatically generated timeline of patient medical history.
+- **Doctor Notes**: Doctors can add notes through QR-secured sessions.
+- **Emergency Profile**: Stores blood group, allergies, critical history, and emergency contacts.
+- **Audit Logging**: Complete logs of doctor and hospital access for transparency.
+
+## Tech Stack
+
+### Frontend
+- React (Vite)
+- TailwindCSS
+- Axios
+- React Router
+- Context API
+
+### Backend
+- Node.js, Express.js
+- MongoDB + Mongoose
+- Multer + Cloudinary
+- JWT Authentication
+- QR Code Generation
+- Tesseract.js OCR
+- Crypto-secured tokens
+
+### AI Microservice
+- FastAPI
+- OpenAI GPT Models
+- Pydantic
+- Uvicorn
+
+## Installation
+
+### Prerequisites
+
+Make sure you have the following installed:
+
+- Node.js 16+
+- Python 3.9+
+- MongoDB running locally or via cloud (MongoDB Atlas)
+
+### Clone the Repository
+
+```bash
 git clone https://github.com/yourusername/healthlog.git
 cd healthlog
+```
+---
 
-Backend Setup
+## Backend Setup
+
+```bash
 cd backend
 npm install
 npm run dev
+```
+---
 
+## Backend Environment Variables (.env)
 
-Environment Variables (backend .env):
-
+```bash
 PORT=8080
 MONGO_URI=
 JWT_SECRET=
@@ -240,82 +79,165 @@ CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 CLIENT_URL=http://localhost:5173
+```
 
-AI Microservice Setup (FastAPI)
+---
+
+## AI Microservice Setup (FastAPI)
+
+```bash
 cd fastapi-ai-summary
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8001
+```
 
+### FastAPI Environment Variables (.env)
 
-Environment Variables (FastAPI .env):
-
+```bash
 OPENAI_API_KEY=
+```
 
-Frontend Setup
+---
+
+## Frontend Setup
+
+```bash
 cd frontend
 npm install
 npm run dev
+```
 
+### Frontend Environment Variables (.env)
 
-Environment Variables (frontend .env):
-
+```bash
 VITE_API_URL=http://localhost:8080/api
+```
 
-7. Project Structure
-backend/
-  ├── controllers/
-  ├── routes/
-  ├── models/
-  ├── middleware/
-  ├── config/
-  └── app.js
+---
 
-fastapi-ai-summary/
-  ├── main.py
-  ├── requirements.txt
-  └── .env
+## Usage
 
-frontend/
-  ├── src/
-  │   ├── pages/
-  │   ├── components/
-  │   ├── api/
-  │   ├── contexts/
-  │   └── App.tsx
-  └── index.html
+1. Start the backend server.
+2. Start the FastAPI AI microservice.
+3. Start the frontend.
+4. Open `http://localhost:5173` in your browser.
+5. Register or log in.
+6. Upload medical records, view dashboard, generate QR codes, or use AI summary features.
 
-8. Security Considerations
+---
 
-All QR tokens are random, secure, and auto-expiring
+## API Overview
 
-Doctor and hospital access occurs only through temporary QR tokens
+### Authentication
+```bash
+POST /auth/register
+POST /auth/verify-email-otp
+POST /auth/login
+```
 
-JWT for user authentication
+### Records
+```bash
+POST /records/upload
+GET  /records/all
+POST /ocr/extract
+GET  /ocr/all
+```
 
-No persistent hospital/doctor accounts
+### Timeline
+```bash
+GET /timeline
+```
 
-Private AI microservice (not directly exposed to UI)
+### Doctor Access
+```bash
+POST /qr/generate
+GET  /doctor/view/:token
+POST /doctor/note/add/:token
+```
 
-Input validation on all API layers
+### Hospital Upload
+```bash
+POST /hospital/generate
+POST /hospital/upload/:token
+```
 
-Audit logging of doctor accesses
+### Emergency (ICE)
+```bash
+POST /ice/save
+POST /ice/generate
+GET  /ice/view/:token
+```
 
-9. Future Enhancements
+### AI Summary
+```bash
+GET /ai/summary
+```
 
-ABDM Health ID linking
+### Audit Logs
+```bash
+GET /audit
+```
 
-Multi-hospital interoperability
+---
 
-AI-based anomaly detection
+## Project Structure
 
-Drug interaction warnings
+```
+healthlog/
+│
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── utils/
+│   │   └── config/
+│   ├── uploads/
+│   ├── package.json
+│   └── server.js
+│
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   └── vite.config.js
+│
+└── fastapi-ai-summary/
+    ├── main.py
+    ├── schemas/
+    ├── services/
+    └── requirements.txt
+```
 
-Encrypted offline health card
+---
 
-Automated report categorization
+## Security Considerations
 
-FHIR-compliant data structures
+- All QR tokens are encrypted and auto-expire.
+- No doctor or hospital login accounts; access is token-based.
+- JWT-based user authentication.
+- Audit logs track all external access via QR tokens.
+- AI microservice is fully isolated from the client.
+- Strict input validation and secure file uploads.
 
-10. License
+---
 
-This project is licensed under the MIT License.
+## Future Enhancements
+
+- ABDM Health ID Integration
+- FHIR-compliant data export/import
+- Multi-hospital interoperability
+- AI-based anomaly detection
+- Drug interaction warnings
+- Offline encrypted health card
+- Automatic report categorization using ML
+
+---
+
+## Acknowledgments
+
+- Tesseract.js for OCR
+- OpenAI API for AI summaries
+- React and Node.js ecosystem
+- FastAPI community
