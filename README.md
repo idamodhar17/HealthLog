@@ -53,7 +53,7 @@ Make sure you have the following installed:
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/healthlog.git
+git clone https://github.com/idamodhar17/HealthLog.git
 cd healthlog
 ```
 ---
