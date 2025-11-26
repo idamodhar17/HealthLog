@@ -4,7 +4,7 @@ HealthLog – AI-Powered Digital Health Locker
 
 HealthLog is a secure, interoperable digital health locker that enables patients to store, manage, and share their medical records. It provides a seamless QR-based workflow for doctors and hospitals, integrates OCR to extract text from medical documents, and uses an AI microservice to generate structured health summaries.
 
-HealthLog follows modern healthcare interoperability concepts inspired by ABDM (Ayushman Bharat Digital Mission) while remaining simple and deployment-ready.
+HealthLog follows modern healthcare interoperability concepts, remaining simple and deployment-ready.
 
 Table of Contents
 
@@ -47,6 +47,7 @@ Audit logs for transparency
 The system ensures that patients remain in full control of their data.
 
 2. Key Features
+
 2.1 Patient Features
 
 Register, verify email via OTP, and log in securely
