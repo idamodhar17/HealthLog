@@ -112,18 +112,6 @@ Public QR for paramedics
 No login required
 
 3. System Architecture
-Frontend (React + Vite + Tailwind)
-                 |
-                 | REST API (Axios)
-                 |
-Backend API (Node.js + Express)
-                 |
-     -----------------------------------------
-     |                                       |
-OCR Engine (Tesseract.js)         AI Microservice (FastAPI + OpenAI)
-                 |
-             MongoDB
-
 
 QR Token System:
 
