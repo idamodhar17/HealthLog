@@ -8,7 +8,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Pages
 import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -133,7 +132,7 @@ const App = () => (
             />
 
             {/* 404 */}
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Index />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

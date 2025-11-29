@@ -114,7 +114,8 @@ const DoctorView: React.FC = () => {
 
         const response = await doctorAPI.viewPatient(token);
 
-        const { patient, medicalData, records, timeline, doctorNotes } = response.data;
+        const { patient, medicalData, records, timeline, doctorNotes } =
+          response.data;
 
         const formattedRecords = records.map((rec: any) => ({
           id: rec._id,
@@ -134,7 +135,7 @@ const DoctorView: React.FC = () => {
 
         setPatient({
           name: patient.name,
-          age: patient.age ??  Math.floor(Math.random() * (30 - 16 + 1)) + 16,
+          age: patient.age ?? Math.floor(Math.random() * (30 - 16 + 1)) + 16,
           bloodGroup: medicalData.bloodGroup ?? "N/A",
           records: formattedRecords,
           timeline: formattedTimeline,
@@ -278,21 +279,26 @@ const DoctorView: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {patient.records.map((record) => (
-                <div
+                <a
                   key={record.id}
-                  className="p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                  href={record.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                       {record.type}
                     </span>
+
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
                       {record.date}
                     </div>
                   </div>
+
                   <p className="font-medium text-foreground">{record.title}</p>
-                </div>
+                </a>
               ))}
             </div>
           </CardContent>
